@@ -215,6 +215,7 @@
   </div>
   <div class="header-right">
     <button class="hbtn" onclick="resetAll()">↺ Сбросить решения</button>
+    <button class="hbtn" onclick="clearState()" style="color:var(--red);border-color:var(--red-border)">🗑 Очистить всё</button>
     <button class="hbtn" onclick="openImport()">📥 Импорт из Excel</button>
     <button class="hbtn primary" onclick="openExport()">⬇ Экспорт итогов</button>
   </div>
@@ -591,7 +592,7 @@ function toggleTask(id){
 function setStatus(id,status){ const t=tasks.find(x=>x.id===id); if(t){t.status=status;render();} }
 function deleteTask(id){ tasks=tasks.filter(t=>t.id!==id); render(); }
 function addTask(){
-  tasks.push({id:nextId++,name:'Новая задача',teamId:teams.length>0?teams[0].id:null,ana:0,dev:0,tst:0,status:'pending',open:true,priority:'',value:'',effect:'',systems:'',stakeholder:'',readiness:'ready',quarter:'',comment:'',jira:'',sd:''});
+  tasks.push({id:nextId++,name:'Новая задача',teamId:null,ana:0,dev:0,tst:0,status:'pending',open:true,priority:'',value:'',effect:'',systems:'',stakeholder:'',readiness:'ready',quarter:'',comment:'',jira:'',sd:''});
   render();
   setTimeout(()=>{document.getElementById('tasks-list').lastElementChild?.scrollIntoView({behavior:'smooth',block:'center'});},50);
 }
@@ -773,7 +774,7 @@ function confirmImport(){
     else if(rp.includes('средн')||rp.includes('med'))priority='medium';
     else if(rp.includes('низк')||rp.includes('low'))priority='low';
     tasks.push({id:nextId++,name,
-      teamId:teams.length>0?teams[0].id:null,
+      teamId:null,
       ana:ai!==null?parseFloat(row[ai])||0:0,
       dev:di!==null?parseFloat(row[di])||0:0,
       tst:ti!==null?parseFloat(row[ti])||0:0,
@@ -794,8 +795,34 @@ function confirmImport(){
 
 function autoH(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 function initTextareas(){document.querySelectorAll('.task-body.open textarea').forEach(autoH);}
+
+const STORAGE_KEY='backlog_tracker_v1';
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify({tasks,teams,nextId,nextTeamId}));
+  }catch(e){}
+}
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const s=JSON.parse(raw);
+    if(s.tasks) tasks=s.tasks;
+    if(s.teams) teams=s.teams;
+    if(s.nextId) nextId=s.nextId;
+    if(s.nextTeamId) nextTeamId=s.nextTeamId;
+    return true;
+  }catch(e){return false;}
+}
+function clearState(){
+  if(!confirm('Очистить все сохранённые данные? Это действие нельзя отменить.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
 const _origRender=render;
-render=function(){_origRender();setTimeout(initTextareas,10);};
+render=function(){_origRender();setTimeout(initTextareas,10);saveState();};
+loadState();
 render();
 </script>
 </body>
