@@ -427,7 +427,6 @@
         <div class="col-map-field"><label>Стейкхолдер</label><select id="col-stakeholder"></select></div>
         <div class="col-map-field"><label>Приоритет</label><select id="col-priority"></select></div>
         <div class="col-map-field"><label>Jira</label><select id="col-jira"></select></div>
-        <div class="col-map-field"><label>SD</label><select id="col-sd"></select></div>
         <div class="col-map-field"><label>Комментарий</label><select id="col-comment"></select></div>
       </div>
       <div class="import-status" id="import-status"></div>
@@ -472,10 +471,10 @@ let teams = [
 
 let nextId = 5;
 let tasks = [
-  { id:1, name:'Онбординг клиентов',   shortDescription:'Онлайн-онбординг юрлиц с сокращением времени старта.', teamId:1, ana:5,  dev:15, tst:8,  status:'pending', open:false, priority:'high',   rank:10, value:'Сокращение времени онбординга на 40%', effect:'~2 млн руб/год',  systems:'CRM, АБС',  stakeholder:'Иванов А.П.',  quarter:'',      comment:'', jira:'', sd:'' },
-  { id:2, name:'Отчёт по транзакциям', shortDescription:'Автоматизация регулярной управленческой отчётности по транзакциям.', teamId:1, ana:3,  dev:10, tst:5,  status:'pending', open:false, priority:'medium', rank:25, value:'Автоматизация отчётности', effect:'', systems:'АБС', stakeholder:'Петрова М.В.', quarter:'', comment:'', jira:'', sd:'' },
-  { id:3, name:'API интеграция с АБС', shortDescription:'Новый API-контур для ускорения обмена с АБС.', teamId:2, ana:8,  dev:30, tst:12, status:'pending', open:false, priority:'high',   rank:15, value:'Ускорение обработки платежей', effect:'~5 млн руб/год', systems:'АБС, SWIFT', stakeholder:'Сидоров К.Л.', quarter:'', comment:'Требует согласования с ИБ', jira:'', sd:'' },
-  { id:4, name:'Личный кабинет 2.0',   shortDescription:'Редизайн личного кабинета с упором на ключевые клиентские сценарии.', teamId:null, ana:12, dev:40, tst:18, status:'pending', open:false, priority:'low', rank:60, value:'Улучшение UX для клиентов', effect:'', systems:'CRM', stakeholder:'Козлов Д.И.', quarter:'Q3 2025', comment:'', jira:'', sd:'' },
+  { id:1, name:'Онбординг клиентов',   shortDescription:'Онлайн-онбординг юрлиц с сокращением времени старта.', teamId:1, ana:5,  dev:15, tst:8,  status:'pending', open:false, priority:'high',   rank:10, value:'Сокращение времени онбординга на 40%', effect:'~2 млн руб/год',  systems:'CRM, АБС',  stakeholder:'Иванов А.П.',  quarter:'',      comment:'', jira:'' },
+  { id:2, name:'Отчёт по транзакциям', shortDescription:'Автоматизация регулярной управленческой отчётности по транзакциям.', teamId:1, ana:3,  dev:10, tst:5,  status:'pending', open:false, priority:'medium', rank:25, value:'Автоматизация отчётности', effect:'', systems:'АБС', stakeholder:'Петрова М.В.', quarter:'', comment:'', jira:'' },
+  { id:3, name:'API интеграция с АБС', shortDescription:'Новый API-контур для ускорения обмена с АБС.', teamId:2, ana:8,  dev:30, tst:12, status:'pending', open:false, priority:'high',   rank:15, value:'Ускорение обработки платежей', effect:'~5 млн руб/год', systems:'АБС, SWIFT', stakeholder:'Сидоров К.Л.', quarter:'', comment:'Требует согласования с ИБ', jira:'' },
+  { id:4, name:'Личный кабинет 2.0',   shortDescription:'Редизайн личного кабинета с упором на ключевые клиентские сценарии.', teamId:null, ana:12, dev:40, tst:18, status:'pending', open:false, priority:'low', rank:60, value:'Улучшение UX для клиентов', effect:'', systems:'CRM', stakeholder:'Козлов Д.И.', quarter:'Q3 2025', comment:'', jira:'' },
 ];
 
 let parsedRows = [], parsedHeaders = [];
@@ -841,7 +840,6 @@ function renderTasks() {
             <div class="est-field"><label>Смежные системы</label><textarea oninput="setTaskField(${t.id},'systems',this.value);autoH(this)" placeholder="АБС, CRM, SWIFT…">${escHtml(t.systems)}</textarea></div>
             <div class="est-field"><label>Стейкхолдер</label><textarea oninput="setTaskField(${t.id},'stakeholder',this.value);autoH(this)" placeholder="ФИО или роль">${escHtml(t.stakeholder)}</textarea></div>
             <div class="est-field"><label>Jira</label><textarea oninput="setTaskField(${t.id},'jira',this.value);autoH(this)" placeholder="PROJ-123">${escHtml(t.jira)}</textarea></div>
-            <div class="est-field"><label>SD</label><textarea oninput="setTaskField(${t.id},'sd',this.value);autoH(this)" placeholder="SD-456">${escHtml(t.sd)}</textarea></div>
           </div>
         </div>
         <div class="body-section">
@@ -956,7 +954,7 @@ function addTask() {
     teamId: null, ana: 0, dev: 0, tst: 0,
     status: 'pending', open: true, priority: '', rank: 0,
     value: '', effect: '', systems: '', stakeholder: '',
-    quarter: '', comment: '', jira: '', sd: ''
+    quarter: '', comment: '', jira: ''
   });
   render();
   setTimeout(() => {
@@ -1052,7 +1050,7 @@ function openExport() {
       <th>#</th><th>Задача</th><th>Short Description</th><th>Команда</th>
       <th>Приор.</th><th>Rank</th><th>А</th><th>Р</th><th>Т</th><th>Итого</th>
       <th>Ценность</th><th>Эффект</th><th>Системы</th><th>Стейкхолдер</th>
-      <th>Jira</th><th>SD</th><th>Квартал</th><th>Комментарий</th>
+      <th>Jira</th><th>Квартал</th><th>Комментарий</th>
     </tr></thead><tbody>`;
     approved.forEach((t, idx) => {
       html += `<tr>
@@ -1069,7 +1067,6 @@ function openExport() {
         <td>${escHtml(t.systems || '')}</td>
         <td>${escHtml(t.stakeholder || '')}</td>
         <td>${escHtml(t.jira || '')}</td>
-        <td>${escHtml(t.sd || '')}</td>
         <td>${escHtml(t.quarter || '')}</td>
         <td>${escHtml(t.comment || '')}</td>
       </tr>`;
@@ -1156,12 +1153,12 @@ async function copyTable() {
 function exportXLSX() {
   const approved = tasks.filter(t => t.status === 'approved');
   const headers = ['#','Задача','Short Description','Команда','Приоритет','Rank',
-    'А','Р','Т','Итого','Ценность','Эффект','Системы','Стейкхолдер','Jira','SD','Квартал','Комментарий'];
+    'А','Р','Т','Итого','Ценность','Эффект','Системы','Стейкхолдер','Jira','Квартал','Комментарий'];
   const rows = approved.map((t, i) => [
     i+1, t.name, t.shortDescription || '', teamName(t.teamId), PL[t.priority] || '',
     t.rank || '', +t.ana, +t.dev, +t.tst, +t.ana + +t.dev + +t.tst,
     t.value || '', t.effect || '', t.systems || '', t.stakeholder || '',
-    t.jira || '', t.sd || '', t.quarter || '', t.comment || ''
+    t.jira || '', t.quarter || '', t.comment || ''
   ]);
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
   const wb = XLSX.utils.book_new();
@@ -1251,7 +1248,6 @@ function populateColMap() {
     { id:'col-stakeholder', kw:['стейкхолдер','stakeholder','владелец','owner'] },
     { id:'col-priority',    kw:['приоритет','priority'] },
     { id:'col-jira',        kw:['jira','жира'] },
-    { id:'col-sd',          kw:['sd','сд','service desk'] },
     { id:'col-comment',     kw:['комментарий','comment','примечание','note'] },
   ];
   fields.forEach(({ id, kw }) => {
@@ -1317,7 +1313,7 @@ function confirmImport() {
   const ai  = gcv('col-ana'),   di  = gcv('col-dev'),  ti  = gcv('col-tst');
   const vi  = gcv('col-value'), ei  = gcv('col-effect'), syi = gcv('col-systems');
   const shi = gcv('col-stakeholder'), pri = gcv('col-priority');
-  const ci  = gcv('col-comment'), ji = gcv('col-jira'), sdi = gcv('col-sd');
+  const ci  = gcv('col-comment'), ji = gcv('col-jira');
 
   pushUndo();
   let added = 0;
@@ -1340,7 +1336,6 @@ function confirmImport() {
       stakeholder: shi !== null ? String(row[shi] || '') : '',
       comment:     ci  !== null ? String(row[ci]  || '') : '',
       jira:        ji  !== null ? String(row[ji]  || '') : '',
-      sd:          sdi !== null ? String(row[sdi] || '') : '',
       priority, rank: 0, shortDescription: '', quarter: '',
       status: 'pending', open: false,
     });
