@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editors / IDE
+.vscode/
+.idea/
+*.swp
+
+# Claude Code
+.claude/
+
+# Локальные бэкапы исходника
+*.backup.html
