@@ -563,10 +563,12 @@ function loadState() {
 }
 
 function clearState() {
-  if (!confirm('Очистить все сохранённые данные? Это действие нельзя отменить.')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(STORAGE_KEY_V1);
-  location.reload();
+  if (!confirm('Удалить все задачи? Команды и капасити останутся. Действие нельзя отменить.')) return;
+  pushUndo();
+  tasks = [];
+  nextId = 1;
+  render();
+  showToast('Все задачи удалены');
 }
 
 // ============================================================
