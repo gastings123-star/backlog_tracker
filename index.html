@@ -132,6 +132,7 @@
   .priority-badge.medium { background: var(--amber-bg); color: var(--amber-text); }
   .priority-badge.low { background: var(--bg3); color: var(--text3); }
   .team-badge { font-size: 11px; padding: 2px 8px; border-radius: 5px; font-weight: 600; white-space: nowrap; color: #fff; }
+  .task-type-pill { font-size: 11px; padding: 2px 8px; border-radius: 5px; font-weight: 600; white-space: nowrap; color: #fff; }
   .status-pill { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; white-space: nowrap; }
   .status-pill.pending { background: var(--purple-bg); color: var(--purple-text); }
   .status-pill.approved { background: var(--green-bg); color: var(--green-text); }
@@ -449,6 +450,7 @@
         <div class="col-map-field"><label>Смежные системы</label><select id="col-systems"></select></div>
         <div class="col-map-field"><label>Стейкхолдер</label><select id="col-stakeholder"></select></div>
         <div class="col-map-field"><label>Приоритет</label><select id="col-priority"></select></div>
+        <div class="col-map-field"><label>Тип задачи</label><select id="col-type"></select></div>
         <div class="col-map-field"><label>Jira</label><select id="col-jira"></select></div>
         <div class="col-map-field"><label>Комментарий</label><select id="col-comment"></select></div>
       </div>
@@ -482,6 +484,8 @@
 const TEAM_COLORS = ['#534AB7','#1D9E75','#D85A30','#185FA5','#854F0B','#993556','#3B6D11','#A32D2D'];
 const PL = {high:'Высокий', medium:'Средний', low:'Низкий', '':''};
 const PILL_TXT = {pending:'На рассмотрении', approved:'Утверждено', rejected:'Отклонено'};
+const TASK_TYPES = {new:'Новая', carry:'Переходящая', reserve:'Резерв'};
+const TASK_TYPE_COLORS = {new:'#185FA5', carry:'#854F0B', reserve:'#993556'};
 const STORAGE_KEY = 'backlog_tracker_v2';
 const STORAGE_KEY_V1 = 'backlog_tracker_v1';
 
@@ -892,6 +896,7 @@ function renderTasks() {
         <div class="task-head-meta">
           ${priHtml}
           ${teamBadgeHtml}
+          <span class="task-type-pill" style="background:${TASK_TYPE_COLORS[t.taskType||'new']}">${TASK_TYPES[t.taskType||'new']}</span>
           <div style="display:flex;gap:4px">${tags}</div>
           ${total > 0 ? `<span style="font-size:11px;color:var(--text3);white-space:nowrap">${total} дн.</span>` : ''}
           <span class="status-pill ${t.status}">${PILL_TXT[t.status]}</span>
@@ -938,6 +943,11 @@ function renderTasks() {
             </div>
             <div class="est-field"><label>Квартал (если отложено)</label>
               <input type="text" value="${escHtml(t.quarter)}" oninput="setTaskField(${t.id},'quarter',this.value)" placeholder="Q3 2025">
+            </div>
+            <div class="est-field"><label>Тип задачи</label>
+              <select onchange="setTaskField(${t.id},'taskType',this.value);render()" aria-label="Тип задачи">
+                ${Object.entries(TASK_TYPES).map(([v,l]) => `<option value="${v}"${(t.taskType||'new')===v?' selected':''}>${l}</option>`).join('')}
+              </select>
             </div>
           </div>
         </div>
@@ -1030,7 +1040,7 @@ function addTask() {
     teamId: null, ana: 0, dev: 0, tst: 0,
     status: 'pending', open: true, priority: '', rank: 0,
     value: '', effect: '', systems: '', stakeholder: '',
-    quarter: '', comment: '', jira: ''
+    quarter: '', comment: '', jira: '', taskType: 'new'
   });
   render();
   setTimeout(() => {
@@ -1333,6 +1343,7 @@ function populateColMap() {
     { id:'col-systems',     kw:['системы','systems','смежн'] },
     { id:'col-stakeholder', kw:['стейкхолдер','stakeholder','владелец','owner'] },
     { id:'col-priority',    kw:['приоритет','priority'] },
+    { id:'col-type',        kw:['тип задачи','тип','категория','type','category'] },
     { id:'col-jira',        kw:['jira','жира'] },
     { id:'col-comment',     kw:['комментарий','comment','примечание','note'] },
   ];
@@ -1401,6 +1412,7 @@ function confirmImport() {
   const shi = gcv('col-stakeholder'), pri = gcv('col-priority');
   const ci  = gcv('col-comment'), ji = gcv('col-jira');
   const sdi = gcv('col-short');
+  const tyi = gcv('col-type');
   const importTeamId = +document.getElementById('import-team').value || null;
 
   pushUndo();
@@ -1412,6 +1424,11 @@ function confirmImport() {
     if (rp.includes('высок') || rp.includes('high'))   priority = 'high';
     else if (rp.includes('средн') || rp.includes('med')) priority = 'medium';
     else if (rp.includes('низк')  || rp.includes('low')) priority = 'low';
+    const rt = String(row[tyi] ?? '').toLowerCase().trim();
+    let taskType = 'new';
+    if (rt.includes('перехо') || rt.includes('перетек') || rt.includes('carry')) taskType = 'carry';
+    else if (rt.includes('резерв') || rt.includes('reserve')) taskType = 'reserve';
+    else if (rt.includes('нов') || rt.includes('new')) taskType = 'new';
     tasks.push({
       id: nextId++, name,
       teamId: importTeamId,
@@ -1426,6 +1443,7 @@ function confirmImport() {
       jira:        ji  !== null ? String(row[ji]  || '') : '',
       priority, rank: 0,
       shortDescription: sdi !== null ? String(row[sdi] || '') : '',
+      taskType,
       quarter: '',
       status: 'pending', open: false,
     });
