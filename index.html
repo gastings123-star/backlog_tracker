@@ -703,7 +703,7 @@ function renderCap() {
     const carry = carryByTeam(team);
     const news  = totalNewByTeam(team.id);
     const appr  = spentByTeam(team.id);
-    const req   = { ana: carry.ana + news.ana, dev: carry.dev + news.dev, tst: carry.tst + news.tst };
+    const req   = { ana: carry.ana + appr.ana, dev: carry.dev + appr.dev, tst: carry.tst + appr.tst };
     const avail = { ana: cap.ana - carry.ana - appr.ana, dev: cap.dev - carry.dev - appr.dev, tst: cap.tst - carry.tst - appr.tst };
     const sum = o => o.ana + o.dev + o.tst;
     const overCls = (v, k) => v > cap[k] ? ' class="over"' : '';
