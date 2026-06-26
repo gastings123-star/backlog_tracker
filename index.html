@@ -194,6 +194,18 @@
   .color-swatch.selected { border-color: var(--text); }
   .color-swatch:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
   .team-budget-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .team-budget-row .team-field { min-width: 0; margin: 0; }
+  .team-budget-row input { width: 100%; box-sizing: border-box; min-width: 0; }
+  /* CAP TABLE */
+  .cap-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  .cap-table th, .cap-table td { border: 1px solid var(--border); padding: 5px 6px; text-align: center; }
+  .cap-table th { background: var(--bg2); font-weight: 600; color: var(--text2); font-size: 11px; }
+  .cap-table td:first-child, .cap-table th:first-child { text-align: left; color: var(--text2); font-weight: 500; white-space: nowrap; }
+  .cap-table tr.total-req { background: rgba(255, 224, 130, 0.18); font-weight: 600; }
+  .cap-table td.over { color: var(--red); }
+  .cap-table input { width: 100%; box-sizing: border-box; padding: 2px 4px; border: 1px solid var(--border2); border-radius: 4px; font-size: 12px; font-family: inherit; background: var(--bg); color: var(--text); text-align: center; min-width: 0; }
+  .cap-table input:focus { outline: none; border-color: var(--purple); }
+  .cap-table input::-webkit-outer-spin-button, .cap-table input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .team-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
   .team-list-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2); }
   .team-list-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
@@ -380,9 +392,15 @@
       <div class="color-row" id="color-row" role="group" aria-label="Выбор цвета"></div>
       <div style="font-size:11px;color:var(--text3);margin-top:10px;margin-bottom:6px;font-weight:500">Бюджет (дней)</div>
       <div class="team-budget-row">
-        <div class="team-field" style="margin:0"><label for="new-team-ana">Анализ</label><input type="number" id="new-team-ana" value="100" min="0"></div>
-        <div class="team-field" style="margin:0"><label for="new-team-dev">Разработка</label><input type="number" id="new-team-dev" value="100" min="0"></div>
-        <div class="team-field" style="margin:0"><label for="new-team-tst">Тестирование</label><input type="number" id="new-team-tst" value="100" min="0"></div>
+        <div class="team-field"><label for="new-team-ana">Анализ</label><input type="number" id="new-team-ana" value="100" min="0"></div>
+        <div class="team-field"><label for="new-team-dev">Разработка</label><input type="number" id="new-team-dev" value="100" min="0"></div>
+        <div class="team-field"><label for="new-team-tst">Тестирование</label><input type="number" id="new-team-tst" value="100" min="0"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;margin-bottom:6px;font-weight:500">Переходящие задачи (дней)</div>
+      <div class="team-budget-row">
+        <div class="team-field"><label for="new-team-carry-ana">Анализ</label><input type="number" id="new-team-carry-ana" value="0" min="0"></div>
+        <div class="team-field"><label for="new-team-carry-dev">Разработка</label><input type="number" id="new-team-carry-dev" value="0" min="0"></div>
+        <div class="team-field"><label for="new-team-carry-tst">Тестирование</label><input type="number" id="new-team-carry-tst" value="0" min="0"></div>
       </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -466,8 +484,8 @@ const STORAGE_KEY_V1 = 'backlog_tracker_v1';
 let selectedColor = TEAM_COLORS[0];
 let nextTeamId = 3;
 let teams = [
-  { id:1, name:'Команда Alpha', color:'#534AB7', ana:100, dev:100, tst:100 },
-  { id:2, name:'Команда Beta',  color:'#1D9E75', ana:100, dev:100, tst:100 },
+  { id:1, name:'Команда Alpha', color:'#534AB7', ana:100, dev:100, tst:100, carryAna:0, carryDev:0, carryTst:0 },
+  { id:2, name:'Команда Beta',  color:'#1D9E75', ana:100, dev:100, tst:100, carryAna:0, carryDev:0, carryTst:0 },
 ];
 
 let nextId = 5;
@@ -537,7 +555,7 @@ function loadState() {
     if (!raw) return false;
     const s = JSON.parse(raw);
     if (Array.isArray(s.tasks))  tasks = s.tasks;
-    if (Array.isArray(s.teams))  teams = s.teams;
+    if (Array.isArray(s.teams))  teams = s.teams.map(t => ({ carryAna:0, carryDev:0, carryTst:0, ...t }));
     if (s.nextId > 0)            nextId = s.nextId;
     if (s.nextTeamId > 0)        nextTeamId = s.nextTeamId;
     return true;
@@ -574,11 +592,20 @@ function spentByTeam(teamId) {
        .forEach(t => { s.ana += +t.ana; s.dev += +t.dev; s.tst += +t.tst; });
   return s;
 }
+function totalNewByTeam(teamId) {
+  const s = { ana:0, dev:0, tst:0 };
+  tasks.filter(t => t.teamId === teamId)
+       .forEach(t => { s.ana += +t.ana||0; s.dev += +t.dev||0; s.tst += +t.tst||0; });
+  return s;
+}
+function carryByTeam(team) {
+  return { ana: +team.carryAna||0, dev: +team.carryDev||0, tst: +team.carryTst||0 };
+}
 function remainingForTeam(teamId) {
   const team = teamById(teamId);
   if (!team) return { ana:0, dev:0, tst:0 };
-  const s = spentByTeam(teamId);
-  return { ana: team.ana - s.ana, dev: team.dev - s.dev, tst: team.tst - s.tst };
+  const s = spentByTeam(teamId), c = carryByTeam(team);
+  return { ana: team.ana - s.ana - c.ana, dev: team.dev - s.dev - c.dev, tst: team.tst - s.tst - c.tst };
 }
 function pct(used, total) { return total > 0 ? Math.min(100, Math.round(used / total * 100)) : 0; }
 
@@ -666,25 +693,12 @@ function renderCap() {
     return;
   }
   el.innerHTML = teams.map(team => {
-    const s = spentByTeam(team.id), r = remainingForTeam(team.id);
-    const types = [
-      { k:'ana', label:'Анализ' },
-      { k:'dev', label:'Разработка' },
-      { k:'tst', label:'Тестирование' },
-    ];
-    const barsHtml = types.map(({ k, label }) => {
-      const used = team[k] - r[k], p = pct(used, team[k]);
-      const over = r[k] < 0, warn = !over && p >= 80;
-      const col = over ? 'var(--red)' : warn ? 'var(--amber)' : team.color;
-      return `<div>
-        <div class="cap-item-head">
-          <span class="cap-item-name">${label}</span>
-          <span class="cap-item-nums" style="color:${col}">${r[k]}<span class="cap-item-total"> / ${team[k]}</span></span>
-        </div>
-        <div class="bar-track"><div class="bar-fill${over?' bar-over':''}" style="width:${p}%;background:${over?'var(--red)':team.color}"></div></div>
-        <div class="cap-item-label">${used} из ${team[k]} дней занято</div>
-      </div>`;
-    }).join('');
+    const cap   = { ana:+team.ana||0, dev:+team.dev||0, tst:+team.tst||0 };
+    const carry = carryByTeam(team);
+    const news  = totalNewByTeam(team.id);
+    const req   = { ana: carry.ana + news.ana, dev: carry.dev + news.dev, tst: carry.tst + news.tst };
+    const sum = o => o.ana + o.dev + o.tst;
+    const overCls = (v, k) => v > cap[k] ? ' class="over"' : '';
     return `<div class="cap-team-block" style="border-left:3px solid ${escHtml(team.color)}">
       <div class="cap-team-name">
         <div class="cap-team-name-left">
@@ -692,13 +706,36 @@ function renderCap() {
           <span>${escHtml(team.name)}</span>
         </div>
       </div>
-      <div class="cap-rows">${barsHtml}</div>
-      <div class="cap-budget-inline">
-        <label>Бюджет:</label>
-        <div class="cap-inp-sm"><span>А</span><input type="number" min="0" value="${+team.ana}" oninput="updateTeamBudget(${team.id},'ana',this.value)" aria-label="Бюджет анализ"></div>
-        <div class="cap-inp-sm"><span>Р</span><input type="number" min="0" value="${+team.dev}" oninput="updateTeamBudget(${team.id},'dev',this.value)" aria-label="Бюджет разработка"></div>
-        <div class="cap-inp-sm"><span>Т</span><input type="number" min="0" value="${+team.tst}" oninput="updateTeamBudget(${team.id},'tst',this.value)" aria-label="Бюджет тестирование"></div>
-      </div>
+      <table class="cap-table">
+        <thead><tr><th></th><th>Анализ, чд</th><th>Разработка, чд</th><th>Тестирование, чд</th><th>Итого, чд</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Capacity команды</td>
+            <td><input type="number" min="0" value="${cap.ana}" oninput="updateTeamBudget(${team.id},'ana',this.value)" aria-label="Capacity анализ"></td>
+            <td><input type="number" min="0" value="${cap.dev}" oninput="updateTeamBudget(${team.id},'dev',this.value)" aria-label="Capacity разработка"></td>
+            <td><input type="number" min="0" value="${cap.tst}" oninput="updateTeamBudget(${team.id},'tst',this.value)" aria-label="Capacity тестирование"></td>
+            <td>${sum(cap)}</td>
+          </tr>
+          <tr>
+            <td>Переходящие задачи</td>
+            <td><input type="number" min="0" value="${carry.ana}" oninput="updateTeamCarry(${team.id},'ana',this.value)" aria-label="Переходящие анализ"></td>
+            <td><input type="number" min="0" value="${carry.dev}" oninput="updateTeamCarry(${team.id},'dev',this.value)" aria-label="Переходящие разработка"></td>
+            <td><input type="number" min="0" value="${carry.tst}" oninput="updateTeamCarry(${team.id},'tst',this.value)" aria-label="Переходящие тестирование"></td>
+            <td>${sum(carry)}</td>
+          </tr>
+          <tr>
+            <td>Новые задачи</td>
+            <td>${news.ana}</td><td>${news.dev}</td><td>${news.tst}</td><td>${sum(news)}</td>
+          </tr>
+          <tr class="total-req">
+            <td>Итого требуется ресурсов</td>
+            <td${overCls(req.ana,'ana')}>${req.ana}</td>
+            <td${overCls(req.dev,'dev')}>${req.dev}</td>
+            <td${overCls(req.tst,'tst')}>${req.tst}</td>
+            <td>${sum(req)}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>`;
   }).join('');
 }
@@ -706,6 +743,13 @@ function renderCap() {
 function updateTeamBudget(teamId, key, val) {
   const t = teamById(teamId);
   if (t) { t[key] = +val || 0; render(); }
+}
+function updateTeamCarry(teamId, key, val) {
+  const t = teamById(teamId);
+  if (!t) return;
+  const map = { ana:'carryAna', dev:'carryDev', tst:'carryTst' };
+  t[map[key]] = +val || 0;
+  render();
 }
 
 // ============================================================
@@ -1021,8 +1065,14 @@ function addTeam() {
     ana: +document.getElementById('new-team-ana').value || 100,
     dev: +document.getElementById('new-team-dev').value || 100,
     tst: +document.getElementById('new-team-tst').value || 100,
+    carryAna: +document.getElementById('new-team-carry-ana').value || 0,
+    carryDev: +document.getElementById('new-team-carry-dev').value || 0,
+    carryTst: +document.getElementById('new-team-carry-tst').value || 0,
   });
   document.getElementById('new-team-name').value = '';
+  document.getElementById('new-team-carry-ana').value = '0';
+  document.getElementById('new-team-carry-dev').value = '0';
+  document.getElementById('new-team-carry-tst').value = '0';
   selectedColor = TEAM_COLORS[nextTeamId % TEAM_COLORS.length] || TEAM_COLORS[0];
   renderTeamList(); renderColorRow(); render();
 }
@@ -1367,7 +1417,7 @@ function handleJsonFile(file) {
         throw new Error('Неверный формат файла');
       if (!confirm(`Загрузить бэкап: ${s.tasks.length} задач, ${s.teams.length} команд?\nТекущие данные будут заменены.`)) return;
       pushUndo();
-      tasks = s.tasks; teams = s.teams;
+      tasks = s.tasks; teams = s.teams.map(t => ({ carryAna:0, carryDev:0, carryTst:0, ...t }));
       if (s.nextId > 0)      nextId = s.nextId;
       if (s.nextTeamId > 0)  nextTeamId = s.nextTeamId;
       closeImport(); render();
