@@ -696,6 +696,7 @@ function renderCap() {
     const cap   = { ana:+team.ana||0, dev:+team.dev||0, tst:+team.tst||0 };
     const carry = carryByTeam(team);
     const news  = totalNewByTeam(team.id);
+    const appr  = spentByTeam(team.id);
     const req   = { ana: carry.ana + news.ana, dev: carry.dev + news.dev, tst: carry.tst + news.tst };
     const sum = o => o.ana + o.dev + o.tst;
     const overCls = (v, k) => v > cap[k] ? ' class="over"' : '';
@@ -726,6 +727,10 @@ function renderCap() {
           <tr>
             <td>Новые задачи</td>
             <td>${news.ana}</td><td>${news.dev}</td><td>${news.tst}</td><td>${sum(news)}</td>
+          </tr>
+          <tr>
+            <td>Утверждённые задачи</td>
+            <td>${appr.ana}</td><td>${appr.dev}</td><td>${appr.tst}</td><td>${sum(appr)}</td>
           </tr>
           <tr class="total-req">
             <td>Итого требуется ресурсов</td>
