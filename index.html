@@ -711,16 +711,16 @@ function renderCap() {
         <tbody>
           <tr>
             <td>Capacity команды</td>
-            <td><input type="number" min="0" value="${cap.ana}" oninput="updateTeamBudget(${team.id},'ana',this.value)" aria-label="Capacity анализ"></td>
-            <td><input type="number" min="0" value="${cap.dev}" oninput="updateTeamBudget(${team.id},'dev',this.value)" aria-label="Capacity разработка"></td>
-            <td><input type="number" min="0" value="${cap.tst}" oninput="updateTeamBudget(${team.id},'tst',this.value)" aria-label="Capacity тестирование"></td>
+            <td><input type="number" min="0" id="cap-${team.id}-cap-ana" value="${cap.ana}" oninput="updateTeamBudget(${team.id},'ana',this.value,this.id)" aria-label="Capacity анализ"></td>
+            <td><input type="number" min="0" id="cap-${team.id}-cap-dev" value="${cap.dev}" oninput="updateTeamBudget(${team.id},'dev',this.value,this.id)" aria-label="Capacity разработка"></td>
+            <td><input type="number" min="0" id="cap-${team.id}-cap-tst" value="${cap.tst}" oninput="updateTeamBudget(${team.id},'tst',this.value,this.id)" aria-label="Capacity тестирование"></td>
             <td>${sum(cap)}</td>
           </tr>
           <tr>
             <td>Переходящие задачи</td>
-            <td><input type="number" min="0" value="${carry.ana}" oninput="updateTeamCarry(${team.id},'ana',this.value)" aria-label="Переходящие анализ"></td>
-            <td><input type="number" min="0" value="${carry.dev}" oninput="updateTeamCarry(${team.id},'dev',this.value)" aria-label="Переходящие разработка"></td>
-            <td><input type="number" min="0" value="${carry.tst}" oninput="updateTeamCarry(${team.id},'tst',this.value)" aria-label="Переходящие тестирование"></td>
+            <td><input type="number" min="0" id="cap-${team.id}-carry-ana" value="${carry.ana}" oninput="updateTeamCarry(${team.id},'ana',this.value,this.id)" aria-label="Переходящие анализ"></td>
+            <td><input type="number" min="0" id="cap-${team.id}-carry-dev" value="${carry.dev}" oninput="updateTeamCarry(${team.id},'dev',this.value,this.id)" aria-label="Переходящие разработка"></td>
+            <td><input type="number" min="0" id="cap-${team.id}-carry-tst" value="${carry.tst}" oninput="updateTeamCarry(${team.id},'tst',this.value,this.id)" aria-label="Переходящие тестирование"></td>
             <td>${sum(carry)}</td>
           </tr>
           <tr>
@@ -740,16 +740,22 @@ function renderCap() {
   }).join('');
 }
 
-function updateTeamBudget(teamId, key, val) {
+function updateTeamBudget(teamId, key, val, focusId) {
   const t = teamById(teamId);
-  if (t) { t[key] = +val || 0; render(); }
+  if (t) { t[key] = +val || 0; render(); restoreFocus(focusId); }
 }
-function updateTeamCarry(teamId, key, val) {
+function updateTeamCarry(teamId, key, val, focusId) {
   const t = teamById(teamId);
   if (!t) return;
   const map = { ana:'carryAna', dev:'carryDev', tst:'carryTst' };
   t[map[key]] = +val || 0;
   render();
+  restoreFocus(focusId);
+}
+function restoreFocus(id) {
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el) { el.focus(); if (el.type !== 'number') { try { el.setSelectionRange(el.value.length, el.value.length); } catch(_){} } }
 }
 
 // ============================================================
