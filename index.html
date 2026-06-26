@@ -203,6 +203,8 @@
   .cap-table th { background: var(--bg2); font-weight: 600; color: var(--text2); font-size: 11px; }
   .cap-table td:first-child, .cap-table th:first-child { text-align: left; color: var(--text2); font-weight: 500; white-space: nowrap; }
   .cap-table tr.total-req { background: rgba(255, 224, 130, 0.18); font-weight: 600; }
+  .cap-table tr.sub td { color: var(--text3); font-size: 11px; font-weight: 400; background: var(--bg2); }
+  .cap-table tr.sub td:first-child { padding-left: 18px; }
   .cap-table td.over { color: var(--red); }
   .cap-table input { width: 100%; box-sizing: border-box; padding: 2px 4px; border: 1px solid var(--border2); border-radius: 4px; font-size: 12px; font-family: inherit; background: var(--bg); color: var(--text); text-align: center; min-width: 0; }
   .cap-table input:focus { outline: none; border-color: var(--purple); }
@@ -612,6 +614,12 @@ function totalNewByTeam(teamId) {
        .forEach(t => { s.ana += +t.ana||0; s.dev += +t.dev||0; s.tst += +t.tst||0; });
   return s;
 }
+function backlogByType(teamId, type) {
+  const s = { ana:0, dev:0, tst:0 };
+  tasks.filter(t => t.teamId === teamId && (t.taskType || 'new') === type)
+       .forEach(t => { s.ana += +t.ana||0; s.dev += +t.dev||0; s.tst += +t.tst||0; });
+  return s;
+}
 function carryByTeam(team) {
   return { ana: +team.carryAna||0, dev: +team.carryDev||0, tst: +team.carryTst||0 };
 }
@@ -711,6 +719,11 @@ function renderCap() {
     const carry = carryByTeam(team);
     const news  = totalNewByTeam(team.id);
     const appr  = spentByTeam(team.id);
+    const byType = {
+      new: backlogByType(team.id, 'new'),
+      carry: backlogByType(team.id, 'carry'),
+      reserve: backlogByType(team.id, 'reserve'),
+    };
     const req   = { ana: carry.ana + appr.ana, dev: carry.dev + appr.dev, tst: carry.tst + appr.tst };
     const avail = { ana: cap.ana - carry.ana - appr.ana, dev: cap.dev - carry.dev - appr.dev, tst: cap.tst - carry.tst - appr.tst };
     const sum = o => o.ana + o.dev + o.tst;
@@ -743,6 +756,18 @@ function renderCap() {
           <tr>
             <td>Объём бэклога</td>
             <td>${news.ana}</td><td>${news.dev}</td><td>${news.tst}</td><td>${sum(news)}</td>
+          </tr>
+          <tr class="sub">
+            <td>· Новые</td>
+            <td>${byType.new.ana}</td><td>${byType.new.dev}</td><td>${byType.new.tst}</td><td>${sum(byType.new)}</td>
+          </tr>
+          <tr class="sub">
+            <td>· Переходящие</td>
+            <td>${byType.carry.ana}</td><td>${byType.carry.dev}</td><td>${byType.carry.tst}</td><td>${sum(byType.carry)}</td>
+          </tr>
+          <tr class="sub">
+            <td>· Резерв</td>
+            <td>${byType.reserve.ana}</td><td>${byType.reserve.dev}</td><td>${byType.reserve.tst}</td><td>${sum(byType.reserve)}</td>
           </tr>
           <tr>
             <td>Утверждённые задачи</td>
