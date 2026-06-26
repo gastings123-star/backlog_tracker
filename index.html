@@ -877,6 +877,7 @@ function renderTasks() {
 
     const div = document.createElement('div');
     div.className = `task ${t.status}`;
+    div.dataset.taskId = t.id;
     div.style.borderLeftColor = t.teamId ? tColor : '#ddd';
     div.innerHTML = `
       <div class="task-head" onclick="toggleTask(${t.id})">
@@ -1000,16 +1001,12 @@ function toggleTask(id) {
   render();
   if (t.open) {
     setTimeout(() => {
-      const bodies = document.querySelectorAll('.task-body.open');
-      for (const body of bodies) {
-        const taskEl = body.closest('.task');
-        if (!taskEl) continue;
-        const cardTop = taskEl.getBoundingClientRect().top + window.scrollY;
-        const headerH = document.querySelector('.header')?.offsetHeight || 0;
-        const capH = document.querySelector('.cap-panel-wrap')?.offsetHeight || 0;
-        window.scrollTo({ top: cardTop - headerH - capH - 12, behavior: 'smooth' });
-        break;
-      }
+      const taskEl = document.querySelector(`.task[data-task-id="${id}"]`);
+      if (!taskEl) return;
+      const cardTop = taskEl.getBoundingClientRect().top + window.scrollY;
+      const headerH = document.querySelector('.header')?.offsetHeight || 0;
+      const capH = document.querySelector('.cap-panel-wrap')?.offsetHeight || 0;
+      window.scrollTo({ top: cardTop - headerH - capH - 12, behavior: 'smooth' });
     }, 60);
   }
 }
