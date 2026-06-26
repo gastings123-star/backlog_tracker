@@ -783,12 +783,20 @@ function restoreFocus(id) {
 // ============================================================
 function renderAlert() {
   const alerts = [];
+  const labels = { ana:'Анализ', dev:'Разработка', tst:'Тестирование' };
   teams.forEach(team => {
     const r = remainingForTeam(team.id);
-    if (Object.values(r).some(v => v < 0))
-      alerts.push({ type:'over', msg:`⛔ <strong>${escHtml(team.name)}</strong>: превышен капаситет` });
-    else if (r.ana < 15 || r.dev < 15 || r.tst < 15)
-      alerts.push({ type:'warn', msg:`⚠️ <strong>${escHtml(team.name)}</strong>: остаток менее 15 дней по одному направлению` });
+    const over = ['ana','dev','tst'].filter(k => r[k] < 0);
+    if (over.length) {
+      const details = over.map(k => `${labels[k]} на ${Math.abs(r[k])} дн.`).join(', ');
+      alerts.push({ type:'over', msg:`⛔ <strong>${escHtml(team.name)}</strong>: превышен капаситет — ${details}` });
+    } else {
+      const low = ['ana','dev','tst'].filter(k => r[k] < 15);
+      if (low.length) {
+        const details = low.map(k => `${labels[k]} — ${r[k]} дн.`).join(', ');
+        alerts.push({ type:'warn', msg:`⚠️ <strong>${escHtml(team.name)}</strong>: остаток менее 15 дней — ${details}` });
+      }
+    }
   });
   const el = document.getElementById('alert-box');
   if (!alerts.length) { el.className = 'alert'; return; }
