@@ -433,6 +433,10 @@
 
     <div id="import-col-map" style="display:none">
       <div class="format-hint" id="format-hint"></div>
+      <div class="col-map-field" style="margin-bottom:12px">
+        <label>Команда для импортируемых задач</label>
+        <select id="import-team"></select>
+      </div>
       <p style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Сопоставление колонок</p>
       <div class="col-map">
         <div class="col-map-field"><label>Название *</label><select id="col-name"></select></div>
@@ -1271,6 +1275,9 @@ function openImport() {
   document.getElementById('import-confirm-btn').style.display = 'none';
   document.getElementById('file-input').value = '';
   parsedRows = []; parsedHeaders = [];
+  const ts = document.getElementById('import-team');
+  ts.innerHTML = '<option value="">— не назначена —</option>' +
+    teams.map(t => `<option value="${t.id}">${escHtml(t.name)}</option>`).join('');
 }
 function closeImport() {
   document.getElementById('import-overlay').classList.remove('show');
@@ -1389,6 +1396,7 @@ function confirmImport() {
   const shi = gcv('col-stakeholder'), pri = gcv('col-priority');
   const ci  = gcv('col-comment'), ji = gcv('col-jira');
   const sdi = gcv('col-short');
+  const importTeamId = +document.getElementById('import-team').value || null;
 
   pushUndo();
   let added = 0;
@@ -1401,7 +1409,7 @@ function confirmImport() {
     else if (rp.includes('низк')  || rp.includes('low')) priority = 'low';
     tasks.push({
       id: nextId++, name,
-      teamId: null,
+      teamId: importTeamId,
       ana:  ai  !== null ? parseFloat(row[ai])  || 0 : 0,
       dev:  di  !== null ? parseFloat(row[di])  || 0 : 0,
       tst:  ti  !== null ? parseFloat(row[ti])  || 0 : 0,
