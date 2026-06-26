@@ -698,8 +698,10 @@ function renderCap() {
     const news  = totalNewByTeam(team.id);
     const appr  = spentByTeam(team.id);
     const req   = { ana: carry.ana + news.ana, dev: carry.dev + news.dev, tst: carry.tst + news.tst };
+    const avail = { ana: cap.ana - carry.ana - appr.ana, dev: cap.dev - carry.dev - appr.dev, tst: cap.tst - carry.tst - appr.tst };
     const sum = o => o.ana + o.dev + o.tst;
     const overCls = (v, k) => v > cap[k] ? ' class="over"' : '';
+    const negCls = v => v < 0 ? ' class="over"' : '';
     return `<div class="cap-team-block" style="border-left:3px solid ${escHtml(team.color)}">
       <div class="cap-team-name">
         <div class="cap-team-name-left">
@@ -725,7 +727,7 @@ function renderCap() {
             <td>${sum(carry)}</td>
           </tr>
           <tr>
-            <td>Новые задачи</td>
+            <td>Объём бэклога</td>
             <td>${news.ana}</td><td>${news.dev}</td><td>${news.tst}</td><td>${sum(news)}</td>
           </tr>
           <tr>
@@ -738,6 +740,13 @@ function renderCap() {
             <td${overCls(req.dev,'dev')}>${req.dev}</td>
             <td${overCls(req.tst,'tst')}>${req.tst}</td>
             <td>${sum(req)}</td>
+          </tr>
+          <tr>
+            <td>Доступные ресурсы</td>
+            <td${negCls(avail.ana)}>${avail.ana}</td>
+            <td${negCls(avail.dev)}>${avail.dev}</td>
+            <td${negCls(avail.tst)}>${avail.tst}</td>
+            <td${negCls(sum(avail))}>${sum(avail)}</td>
           </tr>
         </tbody>
       </table>
