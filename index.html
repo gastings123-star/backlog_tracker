@@ -418,6 +418,7 @@
       <p style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Сопоставление колонок</p>
       <div class="col-map">
         <div class="col-map-field"><label>Название *</label><select id="col-name"></select></div>
+        <div class="col-map-field"><label>Краткая информация</label><select id="col-short"></select></div>
         <div class="col-map-field"><label>Анализ (дни)</label><select id="col-ana"></select></div>
         <div class="col-map-field"><label>Разработка (дни)</label><select id="col-dev"></select></div>
         <div class="col-map-field"><label>Тестирование (дни)</label><select id="col-tst"></select></div>
@@ -1239,6 +1240,7 @@ function handleFile(file) {
 function populateColMap() {
   const fields = [
     { id:'col-name',        kw:['название','задача','task','name','наименование'] },
+    { id:'col-short',       kw:['краткая информация','краткое описание','кратко','short description','short','описание','description'] },
     { id:'col-ana',         kw:['анализ','аналитика','analysis','ana'] },
     { id:'col-dev',         kw:['разработка','разраб','dev'] },
     { id:'col-tst',         kw:['тестирование','тест','test','tst','qa'] },
@@ -1314,6 +1316,7 @@ function confirmImport() {
   const vi  = gcv('col-value'), ei  = gcv('col-effect'), syi = gcv('col-systems');
   const shi = gcv('col-stakeholder'), pri = gcv('col-priority');
   const ci  = gcv('col-comment'), ji = gcv('col-jira');
+  const sdi = gcv('col-short');
 
   pushUndo();
   let added = 0;
@@ -1336,7 +1339,9 @@ function confirmImport() {
       stakeholder: shi !== null ? String(row[shi] || '') : '',
       comment:     ci  !== null ? String(row[ci]  || '') : '',
       jira:        ji  !== null ? String(row[ji]  || '') : '',
-      priority, rank: 0, shortDescription: '', quarter: '',
+      priority, rank: 0,
+      shortDescription: sdi !== null ? String(row[sdi] || '') : '',
+      quarter: '',
       status: 'pending', open: false,
     });
     added++;
