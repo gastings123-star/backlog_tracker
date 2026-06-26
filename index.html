@@ -327,7 +327,11 @@
         </select>
       </div>
     </div>
-    <button class="add-btn" onclick="addTask()">+ Добавить задачу</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="add-btn" onclick="expandAllTasks()" title="Развернуть все">⌄ Развернуть все</button>
+      <button class="add-btn" onclick="collapseAllTasks()" title="Свернуть все">⌃ Свернуть все</button>
+      <button class="add-btn" onclick="addTask()">+ Добавить задачу</button>
+    </div>
   </div>
 
   <div class="filter-bar">
@@ -1048,6 +1052,9 @@ function addTask() {
       ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, 50);
 }
+
+function expandAllTasks()   { tasks.forEach(t => t.open = true);  render(); }
+function collapseAllTasks() { tasks.forEach(t => t.open = false); render(); }
 
 function resetAll() {
   if (!confirm('Сбросить все решения? Задачи и данные останутся.')) return;
