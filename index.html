@@ -98,6 +98,9 @@
   .sort-row select:focus { outline: none; border-color: var(--purple); }
   .add-btn { padding: 6px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1.5px dashed var(--border2); background: transparent; color: var(--text2); font-weight: 500; transition: all .15s; white-space: nowrap; font-family: inherit; }
   .add-btn:hover { border-color: var(--purple); color: var(--purple); border-style: solid; }
+  .btn-chevron { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; vertical-align: 2px; }
+  .btn-chevron.down { transform: rotate(45deg); }
+  .btn-chevron.up { transform: rotate(225deg); vertical-align: -1px; }
 
   /* FILTER BAR */
   .filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
@@ -330,8 +333,8 @@
       </div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button class="add-btn" onclick="expandAllTasks()" title="Развернуть все">⌄ Развернуть все</button>
-      <button class="add-btn" onclick="collapseAllTasks()" title="Свернуть все">⌃ Свернуть все</button>
+      <button class="add-btn" onclick="expandAllTasks()" title="Развернуть все"><span class="btn-chevron down" aria-hidden="true"></span>Развернуть все</button>
+      <button class="add-btn" onclick="collapseAllTasks()" title="Свернуть все"><span class="btn-chevron up" aria-hidden="true"></span>Свернуть все</button>
       <button class="add-btn" onclick="addTask()">+ Добавить задачу</button>
     </div>
   </div>
